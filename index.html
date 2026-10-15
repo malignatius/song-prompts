@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Song Prompts</title>
+<meta name="description" content="Draw randomized song cues and constraints for your next DAW session. Inspired by Oblique Strategies.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;600&family=Raleway:wght@400..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,200&icon_names=autorenew,dark_mode,light_mode,lock&display=block">
+<script>
+  // Apply the saved theme before first paint
+  try { var t = localStorage.getItem("sp:theme"); if (t) document.documentElement.classList.add("sp-" + JSON.parse(t)); } catch (e) {}
+</script>
+<style>
+:root{
+  --bg:#e7e8e3; --bg2:#dce1e8; --glow:rgba(255,255,255,.55);
+  --panel:#f3f4f0; --card:#fbfbf8; --ink:#17191c; --muted:#5d6268; --line:#c9cbc4;
+  --accent:#17b26a; --accent-ink:#1c1e22; --accent-line:#23704d; --title:#ff5353;
+  --radius:8px; --flip:700ms;
+  --display:"Raleway","Helvetica Neue",Arial,sans-serif;
+  --body:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not(.sp-light){--bg:#141518;--bg2:#1e1b18;--glow:rgba(255,255,255,.035);--panel:#1c1e22;--card:#23262b;--ink:#ecede9;--muted:#9aa0a6;--line:#383b42;color-scheme:dark}
+}
+:root.sp-dark{--bg:#141518;--bg2:#1e1b18;--glow:rgba(255,255,255,.035);--panel:#1c1e22;--card:#23262b;--ink:#ecede9;--muted:#9aa0a6;--line:#383b42;color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  background:radial-gradient(1100px 520px at 12% -8%,var(--glow),transparent 70%),linear-gradient(165deg,var(--bg) 0%,var(--bg) 35%,var(--bg2) 100%);
+  background-color:var(--bg);background-attachment:fixed;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+a{color:var(--ink)} a:hover{color:var(--muted)}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.icon{display:inline-block;width:1em;height:1em;overflow:hidden;font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:22px;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-feature-settings:"liga";font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 200,"opsz" 24}
+
+/* header */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;border-bottom:1px solid var(--line);padding:16px 0 18px}
+.brand{display:flex;flex-direction:column;gap:6px;min-width:0}
+h1{margin:0;font-family:var(--display);font-weight:850;font-size:clamp(38px,8vw,72px);line-height:1;text-wrap:balance}
+h1 .name{color:var(--title)} h1 .sub{color:var(--muted);font-weight:400}
+.lede{margin:0;padding:16px 0;color:var(--muted);max-width:52ch;font-family:var(--display);font-size:18px}
+.transport{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tlabel{font-family:var(--display);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;border-right:1px solid var(--line);min-width:44px;min-height:40px;padding:8px 12px;font-family:var(--display);font-size:13px;background:transparent;font-variant-numeric:tabular-nums}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.draw{border:1px solid var(--accent-line);border-radius:8px;background:var(--accent);color:var(--accent-ink);min-height:44px;padding:10px 22px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:800;font-size:16px;display:inline-flex;gap:10px;align-items:center}
+.draw kbd{font-family:var(--mono);font-size:10px;font-weight:600;border:1px solid currentColor;border-radius:3px;padding:1px 5px;opacity:.6}
+@media (hover:none){.draw kbd{display:none}}
+
+/* cards */
+.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{perspective:1100px;display:flex;min-height:260px;min-width:0}
+.flip{position:relative;flex:1;display:flex;min-width:0;transform-style:preserve-3d}
+.card.in .flip{animation:flip var(--flip) cubic-bezier(.3,.7,.2,1) var(--d,0ms) both}
+@keyframes flip{from{transform:rotateX(180deg)}to{transform:rotateX(0deg)}}
+@media (prefers-reduced-motion:reduce){.card.in .flip{animation:none}}
+.front{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 0 10px rgba(0,0,0,.2);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.card.locked .front{border-color:var(--ink)}
+.back{position:absolute;inset:0;transform:rotateX(180deg);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--ink);color:var(--panel);border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;padding:18px}
+.back i{width:14px;height:14px;border-radius:2px;background:var(--accent)}
+.back b{font-family:var(--body);font-weight:850;font-stretch:125%;font-size:22px;line-height:.95;letter-spacing:-.02em}
+.clip{background:var(--clip);color:var(--clipfg);display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.clip .num{opacity:.75;font-variant-numeric:tabular-nums}
+.cbody{flex:1;padding:18px 18px 10px;display:flex;flex-direction:column;gap:10px}
+.kind{font-size:12px;color:var(--muted);font-weight:600}
+.cue{margin:0;font-size:26px;line-height:1.15;font-weight:700;font-stretch:88%;text-wrap:balance;overflow-wrap:anywhere}
+.cue mark{font-weight:850;color:inherit;background:var(--mark);padding:0 .15em;border-radius:3px}
+.foot{display:flex;gap:6px;padding:10px 12px;border-top:1px dashed var(--line)}
+.foot button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1px solid var(--line);border-radius:5px;background:transparent}
+.foot button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+
+/* actions */
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:-12px}
+.ghost{border:1px solid var(--line);background:var(--panel);border-radius:6px;min-height:36px;padding:8px 13px;font-family:var(--display);font-size:12px;font-weight:500}
+.toast{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.manual{display:flex;flex-direction:column;gap:8px;margin-top:-12px;padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.manual label{font-family:var(--display);font-size:12px;color:var(--muted)}
+.manual textarea{width:100%;resize:vertical;font-family:var(--mono);font-size:13px;line-height:1.5;padding:10px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink)}
+.manual .ghost{align-self:flex-start;background:transparent}
+
+/* sections */
+section{display:flex;flex-direction:column;gap:12px}
+h2{margin:0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h2 .links{display:flex;gap:12px}
+.link{border:0;background:none;padding:0;color:var(--ink);font:inherit;text-transform:none;letter-spacing:0;text-decoration:underline;text-underline-offset:3px}
+.strips{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.strip{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;min-height:44px;padding:8px 10px;min-width:0;font-family:var(--display)}
+.strip .sw{width:12px;height:28px;border-radius:2px;flex:none;background:var(--clip);border:1.5px solid var(--clip)}
+.strip .nm{font-family:var(--body);font-weight:700;font-stretch:90%;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strip .ct{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.strip[aria-pressed="false"]{opacity:.45}
+.strip[aria-pressed="false"] .sw{background:transparent}
+
+.log{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.log li{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.log time{font-family:var(--display);font-size:11px;color:var(--muted);min-width:48px;font-variant-numeric:tabular-nums}
+.log .items{flex:999 1 400px;min-width:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.log .items span{display:inline-flex;align-items:baseline;gap:6px}
+.log .items span::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--clip);flex:none}
+.log button{border:1px solid var(--line);background:transparent;border-radius:5px;min-height:32px;padding:4px 10px;font-family:var(--display);font-size:11px}
+.empty{margin:0;padding:10px 0;color:var(--muted);font-size:14px}
+
+.srcbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.srctext{margin:0;font-family:var(--mono);font-size:12px;min-width:0;overflow-wrap:anywhere}
+.srcbtns{display:flex;gap:8px;flex-wrap:wrap}
+.hint{margin:0;color:var(--muted);font-size:14px;max-width:72ch}
+.hint code{font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:0 4px;color:var(--ink)}
+body.drop .wrap{outline:2px dashed var(--accent);outline-offset:8px;border-radius:8px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1><span class="name">SONG PROMPTS</span> <span class="sub">CUE DECK</span></h1>
+      <p class="lede">Draw cues for your next track. Lock the ones you like, re-roll the rest, then open your DAW and follow the brief.</p>
+    </div>
+    <div class="transport">
+      <span class="tlabel" id="nlabel">Number of cards</span>
+      <div class="seg" role="group" aria-labelledby="nlabel" id="count"></div>
+      <button class="iconbtn" id="theme" type="button"><span class="icon" aria-hidden="true" id="themeicon">dark_mode</span></button>
+      <button class="draw" id="draw" type="button">Draw brief <kbd>Space</kbd></button>
+    </div>
+  </header>
+
+  <div class="brief" id="brief" aria-live="polite"></div>
+
+  <div class="actions">
+    <button class="ghost" id="copy" type="button">Copy brief</button>
+    <button class="ghost" id="unlock" type="button">Unlock all</button>
+    <span class="toast" id="toast" role="status"></span>
+  </div>
+  <div class="manual" id="manual" hidden>
+    <label for="manualtext">Your browser blocked copying. Select the text and copy it with Cmd+C or Ctrl+C.</label>
+    <textarea id="manualtext" readonly rows="4"></textarea>
+    <button class="ghost" id="manualclose" type="button">Close</button>
+  </div>
+
+  <section>
+    <h2><span id="catlabel">Categories · <span id="pool"></span></span><span class="links"><button class="link" id="all" type="button">All</button><button class="link" id="none" type="button">None</button></span></h2>
+    <div class="strips" id="strips" role="group" aria-labelledby="catlabel"></div>
+  </section>
+
+  <section>
+    <h2><span>Session log</span><button class="link" id="clear" type="button">Clear log</button></h2>
+    <ol class="log" id="log"></ol>
+  </section>
+
+  <section>
+    <h2><span>Cue list</span></h2>
+    <div class="srcbar">
+      <p id="src" class="srctext">Loading cue list…</p>
+      <div class="srcbtns">
+        <button class="ghost" id="reload" type="button">Reload file</button>
+        <button class="ghost" id="pick" type="button">Load .md file</button>
+        <input type="file" id="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
+      </div>
+    </div>
+    <p class="hint">The cues come from <b>prompts.md</b>: each <code>## Heading</code> is a category and each <code>- Label: Cue</code> line is a card. <code>{bpm}</code>, <code>{key}</code> and <code>{meter}</code> get a random value on every draw. You can also drop your own .md file anywhere on the page.</p>
+  </section>
+
+  <footer>Inspired by Brian Eno and Peter Schmidt's Oblique Strategies. Pontus Jarenskog 2026</footer>
+</div>
+
+<script type="text/markdown" id="builtin">
+# Song Prompts – Ideas
+
+A song prompt/cue generator inspired by Brian Eno & Peter Schmidt's *Oblique Strategies* — but more concrete and aimed at people making music in a DAW. Each card is a **category + a cue**. Draw one, or draw one from several categories and combine them.
+
+Format: `Category: Cue`. Original seed ideas are marked ★.
+
+**This file is the app's cue list.** Each `## Heading` becomes a category in the app, and each `- Label: Cue` line under it becomes a card. Lines in any other format are ignored. These placeholders are filled with a random value on every draw: `{bpm}` (60–180), `{key}` (e.g. E♭ minor), `{meter}` (e.g. 7/8).
+
+---
+
+## Harmony – Mode
+
+- ★ Mode: Use the Ionian mode
+- ★ Mode: Use the Phrygian mode
+- Mode: Use the Dorian mode
+- Mode: Use the Lydian mode
+- Mode: Use the Mixolydian mode
+- Mode: Use the Aeolian (natural minor) mode
+- Mode: Use the Locrian mode — and try to make it sound stable
+- Mode: Use the harmonic minor scale
+- Mode: Use the Phrygian dominant scale
+- Mode: Use a pentatonic scale only — no other notes allowed
+- Mode: Use the whole-tone scale
+- Mode: Write the verse in one mode and the chorus in its parallel mode (e.g. C Dorian → C Lydian)
+
+## Harmony – Chords & Key
+
+- Key: Write in {key}
+- Key: Write in a key you rarely use
+- Key: Modulate up a whole step for the final chorus
+- Key: Change key at least three times in the song
+- Key: Never resolve to the tonic chord
+- Chords: Use only two chords for the whole song
+- Chords: Use only one chord — create interest with everything else
+- Chords: Every chord must be a seventh chord or richer
+- Chords: Use at least one borrowed chord from the parallel minor/major
+- Chords: Use only inversions — no root-position chords
+- Chords: Build the progression with a descending bass line
+- Chords: Use a pedal note in the bass while the chords move above it
+- Chords: Use a chord progression from a song you love, played backwards
+- Chords: Use stacked fourths instead of thirds
+- Chords: Use power chords (root + fifth) only
+- Chords: Change chord on an unexpected beat
+
+## Melody
+
+- Melody: The main melody may only use three notes
+- Melody: Write the melody first, without any chords
+- Melody: Base the melody on the rhythm of a sentence you say out loud
+- Melody: Use a large leap (an octave or more) in the hook
+- Melody: The melody must move only stepwise
+- Melody: Let the melody sit on one note for a whole section
+- Melody: Write a call-and-response between two instruments
+- Melody: Turn your phone number into a melody (1 = root, 2 = second …)
+- Melody: Spell a word using note names (A–G, H in German notation) and use it as a motif
+- Melody: Invert your main motif and use it in the bridge
+- Melody: Play the hook in a register you'd never sing in
+
+## Tempo
+
+- Tempo: Set the tempo to {bpm} BPM
+- ★ Tempo: Make one or more drastic changes in the song's tempo
+- Tempo: Under 70 BPM
+- Tempo: Over 160 BPM
+- Tempo: Use a gradual accelerando through the whole song
+- Tempo: Halve the tempo for the bridge (half-time feel)
+- Tempo: Turn off the click — record everything free-time
+- Tempo: Choose an odd BPM (e.g. 97, 113, 131) and commit to it
+- Tempo: Use tempo automation so the song breathes
+
+## Time Signature & Meter
+
+- Meter: Write in {meter}
+- Meter: Write in 3/4
+- Meter: Write in 5/4
+- Meter: Write in 7/8
+- Meter: Use 6/8 with a strong swing
+- Meter: Switch time signature between verse and chorus
+- Meter: Add a single bar of an odd meter to break up a section
+- Meter: Layer two meters at once (polymeter, e.g. a 4-step and a 3-step loop)
+- Meter: Use polyrhythm — 3 against 2, or 4 against 3
+
+## Rhythm & Groove
+
+- ★ Rhythm: Use a bossa nova rhythm
+- Rhythm: Use a reggae one-drop
+- Rhythm: Use an Afrobeat groove
+- Rhythm: Use a four-on-the-floor kick
+- Rhythm: Use a breakbeat (chop a drum loop)
+- Rhythm: Use a clave pattern (son or rumba) as the backbone
+- Rhythm: Use a trap hi-hat pattern with rolls
+- Rhythm: Use a shuffle/swing feel throughout
+- Rhythm: Use a Motown-style backbeat
+- Rhythm: Use a dembow rhythm
+- Rhythm: Program drums with no quantization at all
+- Rhythm: Quantize everything to 100% — make the rigidity a feature
+- Rhythm: Put the snare somewhere other than beats 2 and 4
+- Rhythm: Build the groove using only body percussion you record yourself
+
+## Dynamics
+
+- ★ Dynamics: Create a song with great changes in dynamics between different sections
+- Dynamics: Keep the whole song quiet — never above mezzo-piano
+- Dynamics: One long crescendo from start to finish
+- Dynamics: Start at full intensity and wind down to silence
+- Dynamics: Include a moment of complete silence
+- Dynamics: Use a sudden drop-out right before the biggest moment
+- Dynamics: No compression on the master bus
+
+## Sound & Instrumentation
+
+- ★ Sound: Download a software instrument you haven't used before and use it
+- ★ Sound: Create a song without any drums or percussion
+- ★ Sound: Create a song with a drone tone throughout the song
+- Sound: Use only one instrument (a single synth patch, piano or guitar)
+- Sound: Use only stock plugins from your DAW
+- Sound: Use only sounds you recorded with your phone
+- Sound: Build every sound from one recorded sample
+- Sound: Use a found sound as the main percussion (keys, doors, kitchenware)
+- Sound: Use field recordings as a bed throughout the song
+- Sound: Use only sine waves
+- Sound: Use a sound from your childhood (a toy, a game, a radio)
+- Sound: Make your lead sound with your voice, processed beyond recognition
+- Sound: Use an instrument you can't actually play — and play it
+- Sound: Pick a random preset and don't tweak it
+- Sound: No bass instrument — let other parts carry the low end
+- Sound: Use a string, brass or woodwind section
+- Sound: Use only acoustic instruments
+- Sound: Use only synthesizers
+- Sound: Use a chiptune / 8-bit palette
+
+## Production & Effects
+
+- Effects: Reverse something important
+- Effects: Use an extreme amount of reverb on one element
+- Effects: No reverb at all — completely dry
+- Effects: Use tape stop or vinyl slowdown as a transition
+- Effects: Use heavy sidechain compression as a creative effect
+- Effects: Run everything through one guitar amp plugin
+- Effects: Use bitcrushing or sample-rate reduction on the main melody
+- Effects: Pitch-shift a recording an octave down and build from it
+- Effects: Automate a filter sweep over a whole section
+- Effects: Resample your own track and chop it into a new part
+- Effects: Use granular processing on a vocal
+- Production: Mono mix only
+- Production: Use extreme panning (hard left / hard right only)
+- Production: Make it sound like it's coming from another room
+- Production: Make it lo-fi — tape hiss, wow and flutter, crackle
+
+## Structure & Form
+
+- Structure: No chorus
+- Structure: No repetition — every section is new (through-composed)
+- Structure: Start with the chorus
+- Structure: Make the song under 90 seconds
+- Structure: Make the song over 8 minutes
+- Structure: Use AABA form
+- Structure: Use a 12-bar blues form, in any genre
+- Structure: Let the intro be longer than any other section
+- Structure: End abruptly, mid-phrase
+- Structure: End on a fade-out that lasts a minute
+- Structure: Write the bridge first and build the song around it
+- Structure: Every section must be an odd number of bars
+
+## Constraints & Limits
+
+- Limit: Use a maximum of 4 tracks
+- Limit: Use a maximum of 8 tracks
+- Limit: Finish the song in 60 minutes
+- Limit: Finish a sketch in 15 minutes, then stop
+- Limit: Record everything in one take — no editing
+- Limit: Use no MIDI — audio only
+- Limit: Use no audio — MIDI only
+- Limit: Don't use your computer keyboard or mouse to enter notes — play everything
+- Limit: Only use notes on the white keys
+- Limit: Only use notes on the black keys
+- Limit: No undo
+- Limit: Use only the first 8 bars you make, then arrange them
+
+## Vocals & Lyrics
+
+- Vocals: Write an instrumental
+- Vocals: Use spoken word instead of singing
+- Vocals: Sing in a language you don't speak (or an invented one)
+- Vocals: Use only wordless vocals (oohs, aahs, humming)
+- Vocals: Stack the vocal into a choir of yourself (8+ layers)
+- Vocals: Use a vocoder or talk box on the lead
+- Lyrics: Write the lyrics from a newspaper headline
+- Lyrics: Write the lyrics as a letter to someone
+- Lyrics: Use only words of one syllable
+- Lyrics: Write the lyrics before any music
+
+## Genre & Style
+
+- Genre: Combine two genres that don't belong together
+- Genre: Write in a genre you've never tried
+- Genre: Make a version of your last song in a completely different genre
+- Genre: Make it sound like it was recorded in 1965
+- Genre: Make it sound like it was recorded in 1985
+- Genre: Make it sound like music from 50 years in the future
+- Genre: Write a lullaby
+- Genre: Write a film-score cue for a scene that doesn't exist
+- Genre: Write a theme song for a fictional TV show
+
+## Mood & Concept
+
+- Mood: Write about a place you've only seen in pictures
+- Mood: Translate a painting or photograph into a song
+- Mood: Write music for the weather outside right now
+- Mood: Make something happy that sounds sad, or vice versa
+- Mood: Write a song that slowly falls apart
+- Mood: Capture a specific memory from your childhood
+- Mood: Score the sound of a city at 4 a.m.
+- Concept: Every section represents a season
+- Concept: Write a song that loops seamlessly forever
+
+## Process & Workflow
+
+- Process: Start with the bass line
+- Process: Start with the drums
+- Process: Start with a sound, not a note
+- Process: Delete your favourite part and rebuild without it
+- Process: Swap the roles of two instruments (bass plays melody, lead plays bass)
+- Process: Work on the song for 10 minutes a day for a week
+- Process: Hand the project to a friend for 30 minutes and continue from where they left off
+- Process: Roll a die to choose the next chord (1–6 = scale degrees I–VI)
+- Process: Mute everything except one track and write a new part for it
+- Process: Finish it today, even if it isn't perfect
+
+## Wildcard (closest to the Oblique Strategies spirit)
+
+- Wildcard: Do the opposite of your first instinct
+- Wildcard: What would your favourite artist never do? Do that
+- Wildcard: Make a mistake on purpose and keep it
+- Wildcard: Remove the element you think is most important
+- Wildcard: Make it simpler
+- Wildcard: Make it stranger
+- Wildcard: Listen to it at a very low volume and fix what bothers you
+
+---
+
+## Notes for the app
+
+- **Combining:** Drawing one card from 2–4 categories at once (e.g. Mode + Rhythm + Sound + Limit) gives a complete "brief" for a track.
+- **Category locking:** Let the user lock a card they like and re-roll the rest.
+- **Conflicts:** Some cards contradict each other (e.g. *No drums* + *Use a bossa nova rhythm*). Either tag them as incompatible, or keep it as a deliberate challenge ("make it work").
+- **Difficulty / intensity:** Tag cards as gentle, medium or extreme so users can dial in how hard the brief is.
+- **Concrete vs. oblique:** Possibly a slider between concrete DAW cues and more poetic, open cues (the Wildcard category).
+- **Random values:** Some cards could generate parameters (random BPM, random key, random time signature) instead of fixed text.
+- **History:** Save drawn combinations so a user can revisit the brief behind a finished song.
+
+</script>
+<script>
+// ---------- Cue list ----------
+// "## Heading" = category, "- Label: Cue" = card. Anything else is ignored.
+var SOURCES = ["prompts.md"];
+var SHORT = {"Harmony – Mode":"Mode","Harmony – Chords & Key":"Chords & Key","Time Signature & Meter":"Meter","Rhythm & Groove":"Rhythm","Sound & Instrumentation":"Sound","Production & Effects":"Effects","Structure & Form":"Structure","Constraints & Limits":"Limits","Vocals & Lyrics":"Vocals","Genre & Style":"Genre","Mood & Concept":"Mood","Process & Workflow":"Process"};
+// Category colours, in category order
+var PALETTE = ["#f42828","#e81e63","#9c27b0","#673ab7","#3f51b5","#2196f3","#03a9f4","#00bcd4","#009688","#4caf50","#8bc34a","#cddc39","#ffeb3b","#ffc107","#ff9800","#ff5722"];
+var KEYS = ["C","C♯","D","E♭","E","F","F♯","G","A♭","A","B♭","B"];
+var METERS = ["3/4","5/4","6/8","7/8","9/8","11/8","5/8","7/4","12/8"];
+
+function parseMd(md){
+  var groups = [], cur = null;
+  md.replace(/\r/g,"").split("\n").forEach(function(line){
+    var h = line.match(/^##\s+(.+?)\s*$/);
+    if (h) { cur = {name: h[1].replace(/\s*\(.*?\)\s*$/,""), cues: []}; groups.push(cur); return; }
+    if (/^#\s/.test(line)) { cur = null; return; }
+    var m = line.match(/^\s*[-*]\s+(?:★\s*)?([^:*`]{1,40}?):\s+(.+?)\s*$/);
+    if (m && cur) cur.cues.push([m[1].trim(), m[2].replace(/\*\*(.+?)\*\*/g,"$1").replace(/`(.+?)`/g,"$1")]);
+  });
+  var out = groups.filter(function(g){ return g.cues.length; });
+  out.forEach(function(g,i){
+    g.short = SHORT[g.name] || g.name.replace(/^.*–\s*/,"");
+    g.color = PALETTE[i % PALETTE.length];
+    g.fg = onColor(g.color);
+  });
+  return out;
+}
+// Dark or light text, whichever reads better on the colour
+function onColor(hex){
+  var lin = function(v){ v = v/255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+  var n = parseInt(hex.slice(1),16);
+  var Y = 0.2126*lin(n>>16&255) + 0.7152*lin(n>>8&255) + 0.0722*lin(n&255);
+  return (Y+0.05)/(0.0113+0.05) >= 1.05/(Y+0.05) ? "#111111" : "#ffffff";
+}
+var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
+var rnd = function(a){ return a[Math.floor(Math.random()*a.length)]; };
+var pad = function(x){ return String(x).padStart(2,"0"); };
+
+// ---------- Storage (optional; the app works without it) ----------
+var store = {
+  get: function(k,d){ try { var v = localStorage.getItem("sp:"+k); return v ? JSON.parse(v) : d; } catch(e) { return d; } },
+  set: function(k,v){ try { localStorage.setItem("sp:"+k, JSON.stringify(v)); } catch(e) {} }
+};
+
+// ---------- State ----------
+var DATA = [];
+var n = store.get("n", 3);
+var disabled = store.get("disabled", []);
+var log = store.get("log", []);
+var hand = [];
+var $ = function(id){ return document.getElementById(id); };
+var group = function(name){ for (var i=0;i<DATA.length;i++) if (DATA[i].name===name) return DATA[i]; return null; };
+var enabled = function(){ return DATA.filter(function(g){ return disabled.indexOf(g.name) < 0; }); };
+
+function makeCard(g, ci){
+  var t = g.cues[ci][1], m = t.match(/\{(bpm|key|meter)\}/), pre = t, val = "", post = "";
+  if (m) {
+    val = m[1]==="bpm" ? String(60+Math.floor(Math.random()*121)) : m[1]==="key" ? rnd(KEYS)+" "+rnd(["major","minor"]) : rnd(METERS);
+    pre = t.slice(0, m.index); post = t.slice(m.index + m[0].length);
+  }
+  return { g: g.name, ci: ci, pre: pre, val: val, post: post, locked: false, fresh: true };
+}
+function pick(used){
+  var on = enabled(), pool = on.filter(function(g){ return used.indexOf(g.name) < 0; });
+  var g = rnd(pool.length ? pool : (on.length ? on : DATA));
+  return makeCard(g, Math.floor(Math.random()*g.cues.length));
+}
+function cardText(c){ var g = group(c.g); return (g ? g.cues[c.ci][0] : c.g) + ": " + c.pre + c.val + c.post; }
+
+function draw(){
+  var keep = [], used = [];
+  for (var i=0;i<n;i++){ var c = hand[i]; keep.push(c && c.locked ? c : null); if (c && c.locked) used.push(c.g); }
+  hand.forEach(function(c){ c.fresh = false; });
+  hand = keep.map(function(c){ if (c) return c; var p = pick(used); used.push(p.g); return p; });
+  render(); pushLog();
+}
+function reroll(i){
+  var used = hand.filter(function(c,j){ return j!==i; }).map(function(c){ return c.g; });
+  var old = hand[i], p, t = 0;
+  do { p = pick(used); t++; } while (t<20 && p.g===old.g && p.ci===old.ci);
+  hand.forEach(function(c){ c.fresh = false; });
+  hand[i] = p; render(); pushLog();
+}
+function pushLog(){
+  var d = new Date();
+  log.unshift({ t: d.getTime(), c: hand.map(function(c){ return { g: c.g, txt: cardText(c) }; }) });
+  log = log.slice(0,30); store.set("log", log); renderLog();
+}
+
+// ---------- Rendering ----------
+function render(){
+  var b = $("brief"), k = 0;
+  b.innerHTML = hand.map(function(c,i){
+    var g = group(c.g), delay = c.fresh ? (k++)*90 : 0;
+    return '<article class="card'+(c.locked?' locked':'')+(c.fresh?' in':'')+'" style="--clip:'+g.color+';--clipfg:'+g.fg+';--mark:'+g.color+'59;--d:'+delay+'ms">'
+      + '<div class="flip"><div class="front">'
+      + '<div class="clip"><span>'+esc(g.short)+'</span><span class="num">'+pad(c.ci+1)+'/'+pad(g.cues.length)+'</span></div>'
+      + '<div class="cbody"><div class="kind">'+esc(g.cues[c.ci][0])+'</div>'
+      + '<p class="cue">'+esc(c.pre)+(c.val?'<mark>'+esc(c.val)+'</mark>':'')+esc(c.post)+'</p></div>'
+      + '<div class="foot">'
+      + '<button type="button" data-lock="'+i+'" aria-pressed="'+c.locked+'" aria-label="'+(c.locked?'Locked':'Lock')+'" title="'+(c.locked?'Locked':'Lock')+'"><span class="icon" aria-hidden="true">lock</span></button>'
+      + '<button type="button" data-reroll="'+i+'" aria-label="Re-roll" title="Re-roll"'+(c.locked?' disabled':'')+'><span class="icon" aria-hidden="true">autorenew</span></button>'
+      + '</div></div>'
+      + '<div class="back" aria-hidden="true"><i></i><b>Song<br>Prompts</b></div>'
+      + '</div></article>';
+  }).join("");
+  hand.forEach(function(c){ c.fresh = false; });
+}
+function renderCount(){
+  $("count").innerHTML = [1,2,3,4].map(function(k){ return '<button type="button" data-n="'+k+'" aria-pressed="'+(k===n)+'">'+k+'</button>'; }).join("");
+}
+function renderStrips(){
+  $("strips").innerHTML = DATA.map(function(g,i){
+    return '<button type="button" class="strip" data-cat="'+i+'" aria-pressed="'+(disabled.indexOf(g.name)<0)+'" title="'+esc(g.name)+'" style="--clip:'+g.color+'">'
+      + '<span class="sw"></span><span class="nm">'+esc(g.short)+'</span><span class="ct">'+g.cues.length+'</span></button>';
+  }).join("");
+  var on = enabled(), total = on.reduce(function(a,g){ return a+g.cues.length; }, 0);
+  $("pool").textContent = on.length+" of "+DATA.length+" on, "+total+" cues";
+}
+function renderLog(){
+  var l = $("log");
+  if (!log.length) { l.innerHTML = '<li class="empty">Briefs you draw show up here.</li>'; return; }
+  l.innerHTML = log.map(function(e,i){
+    var d = new Date(e.t);
+    return '<li><time>'+pad(d.getHours())+':'+pad(d.getMinutes())+'</time><div class="items">'
+      + e.c.map(function(c){ var g = group(c.g); return '<span style="--clip:'+(g?g.color:'var(--muted)')+'">'+esc(c.txt)+'</span>'; }).join("")
+      + '</div><button type="button" data-copylog="'+i+'">Copy</button></li>';
+  }).join("");
+}
+function renderTheme(){
+  var root = document.documentElement, dark = root.classList.contains("sp-dark") ||
+    (!root.classList.contains("sp-light") && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+  $("themeicon").textContent = dark ? "light_mode" : "dark_mode";
+  $("theme").setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  $("theme").title = $("theme").getAttribute("aria-label");
+  return dark;
+}
+
+// ---------- Copy with fallbacks ----------
+function toast(t){ $("toast").textContent = t; clearTimeout(toast.h); toast.h = setTimeout(function(){ $("toast").textContent = ""; }, 2200); }
+function copy(text){
+  var done = function(){ $("manual").hidden = true; toast("Copied to clipboard"); };
+  var legacy = function(){
+    var ok = false;
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly",""); ta.style.position = "fixed"; ta.style.top = "0"; ta.style.left = "-9999px";
+      document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); document.body.removeChild(ta);
+    } catch(e) { ok = false; }
+    if (ok) return done();
+    $("manualtext").value = text; $("manualtext").rows = Math.max(3, text.split("\n").length);
+    $("manual").hidden = false; $("manualtext").focus(); $("manualtext").select();
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, legacy);
+    else legacy();
+  } catch(e) { legacy(); }
+}
+
+// ---------- Events ----------
+document.addEventListener("click", function(e){
+  var t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.lock) { var c = hand[+t.dataset.lock]; c.locked = !c.locked; render(); }
+  else if (t.dataset.reroll) reroll(+t.dataset.reroll);
+  else if (t.dataset.n) {
+    n = +t.dataset.n; store.set("n", n); renderCount();
+    if (hand.length < n) draw(); else { hand = hand.slice(0,n); render(); }
+  }
+  else if (t.dataset.cat) {
+    var g = DATA[+t.dataset.cat], at = disabled.indexOf(g.name);
+    if (at < 0) disabled.push(g.name); else disabled.splice(at,1);
+    store.set("disabled", disabled); renderStrips();
+    if (!enabled().length) toast("Turn on at least one category to draw");
+  }
+  else if (t.dataset.copylog) { var en = log[+t.dataset.copylog]; copy(en.c.map(function(c){ return "• "+c.txt; }).join("\n")); }
+});
+$("draw").onclick = draw;
+$("copy").onclick = function(){ copy("Song brief\n"+hand.map(function(c){ return "• "+cardText(c); }).join("\n")); };
+$("unlock").onclick = function(){ hand.forEach(function(c){ c.locked = false; }); render(); };
+$("manualclose").onclick = function(){ $("manual").hidden = true; };
+$("all").onclick = function(){ disabled = []; store.set("disabled", disabled); renderStrips(); };
+$("none").onclick = function(){ disabled = DATA.map(function(g){ return g.name; }); store.set("disabled", disabled); renderStrips(); toast("Turn on at least one category to draw"); };
+$("clear").onclick = function(){ log = []; store.set("log", log); renderLog(); };
+$("theme").onclick = function(){
+  var next = renderTheme() ? "light" : "dark", root = document.documentElement;
+  root.classList.remove("sp-dark","sp-light"); root.classList.add("sp-"+next); store.set("theme", next); renderTheme();
+};
+if (window.matchMedia) { try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderTheme); } catch(e) {} }
+document.addEventListener("keydown", function(e){
+  if (e.code === "Space" && !e.repeat && !/INPUT|TEXTAREA|BUTTON|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); draw(); }
+});
+
+// ---------- Loading the cue list ----------
+function useMd(md, label){
+  var data = parseMd(md);
+  if (!data.length) return false;
+  DATA = data;
+  var total = DATA.reduce(function(a,g){ return a+g.cues.length; }, 0);
+  $("src").textContent = label+" · "+DATA.length+" categories, "+total+" cues";
+  renderStrips(); renderLog();
+  hand = []; var used = [];
+  for (var i=0;i<n;i++){ var p = pick(used); used.push(p.g); hand.push(p); }
+  render();
+  return true;
+}
+var now = function(){ var d = new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); };
+function load(manual){
+  var tryNext = function(i){
+    if (i >= SOURCES.length) {
+      var saved = store.get("md", null);
+      if (saved && useMd(saved.text, "Using "+saved.name+" you loaded earlier")) { if (manual) toast("Couldn't read prompts.md. Use Load .md file instead."); return; }
+      useMd($("builtin").textContent, "Using the built-in cue list");
+      if (manual) toast("Couldn't read prompts.md. Use Load .md file instead.");
+      return;
+    }
+    fetch(encodeURI(SOURCES[i]), {cache:"no-store"})
+      .then(function(r){ if (!r.ok) throw 0; return r.text(); })
+      .then(function(t){ if (useMd(t, "Loaded from "+SOURCES[i]+" at "+now())) { if (manual) toast("Cue list reloaded"); } else tryNext(i+1); })
+      .catch(function(){ tryNext(i+1); });
+  };
+  tryNext(0);
+}
+function readFile(file){
+  if (!file) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    var text = String(fr.result);
+    if (useMd(text, "Loaded from "+file.name+" at "+now())) { store.set("md", {name:file.name, text:text}); toast("Cue list loaded"); }
+    else toast("No cues found. Use ## headings and - Label: Cue lines.");
+  };
+  fr.readAsText(file);
+}
+$("reload").onclick = function(){ load(true); };
+$("pick").onclick = function(){ $("file").click(); };
+$("file").onchange = function(e){ readFile(e.target.files[0]); e.target.value = ""; };
+document.addEventListener("dragover", function(e){ e.preventDefault(); document.body.classList.add("drop"); });
+document.addEventListener("dragleave", function(e){ if (!e.relatedTarget) document.body.classList.remove("drop"); });
+document.addEventListener("drop", function(e){ e.preventDefault(); document.body.classList.remove("drop"); readFile(e.dataTransfer.files[0]); });
+
+renderCount(); renderTheme(); load(false);
+</script>
+</body>
+</html>
