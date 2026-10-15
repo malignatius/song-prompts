@@ -119,7 +119,10 @@ h2 .links{display:flex;gap:12px}
 .hint{margin:0;color:var(--muted);font-size:14px;max-width:72ch}
 .hint code{font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:0 4px;color:var(--ink)}
 body.drop .wrap{outline:2px dashed var(--accent);outline-offset:8px;border-radius:8px}
-footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 24px}
+.flinks{display:flex;gap:18px}
+.flinks a{color:var(--ink);font-family:var(--display);font-weight:600;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px;padding:6px 0}
+.flinks a:hover{color:var(--ink);text-decoration-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -173,7 +176,13 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
     <p class="hint">The cues come from <b>prompts.md</b>: each <code>## Heading</code> is a category and each <code>- Label: Cue</code> line is a card. <code>{bpm}</code>, <code>{key}</code> and <code>{meter}</code> get a random value on every draw. You can also drop your own .md file anywhere on the page.</p>
   </section>
 
-  <footer>Inspired by Brian Eno and Peter Schmidt's Oblique Strategies. Pontus Jarenskog 2026</footer>
+  <footer>
+    <span>Inspired by Brian Eno and Peter Schmidt's Oblique Strategies. Pontus Jarenskog 2026</span>
+    <nav class="flinks" aria-label="Pontus Jarenskog elsewhere">
+      <a href="https://soundcloud.com/pontusjarenskog" target="_blank" rel="noopener">SoundCloud</a>
+      <a href="https://www.jarenskog.se/" target="_blank" rel="noopener">jarenskog.se</a>
+    </nav>
+  </footer>
 </div>
 
 <script type="text/markdown" id="builtin">
